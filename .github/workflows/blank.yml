@@ -26,18 +26,31 @@ jobs:
           echo "V009R001C001B0030" >> version.txt  # 这里假设 version.txt 是你的版本文件
           echo "::set-output name=version::$(cat version.txt)"
 
-      - name: Download Docker tar file
+      - name: Define Docker image URL
+        id: set_url
         run: |
           ARCH=${{ matrix.arch }}
           VERSION=${{ steps.version.outputs.version }}
-          # https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_${VERSION}.tar
-          if [ "$ARCH" == "amd" ]; then
-            CURL_URL="https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_${VERSION}.tar"
-          elif [ "$ARCH" == "arm" ]; then
-            CURL_URL="https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_aarch64_${VERSION}.tar"
-          fi
           
-          curl -L $CURL_URL -o docker_image.tar
+          if [ "$ARCH" == "amd" ]; then
+            echo "url=https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_$VERSION.tar" >> $GITHUB_ENV
+          elif [ "$ARCH" == "arm" ]; then
+            echo "url=https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_aarch64_$VERSION.tar" >> $GITHUB_ENV
+          fi
+      - name: Cache Docker image tar
+        uses: actions/cache@v3
+        with:
+          path: docker_image.tar
+          key: ${{ runner.os }}-docker-${{ matrix.arch }}-${{ steps.version.outputs.version }}
+          
+      - name: Download Docker image tar
+        run: |
+          if [[ ! -f docker_image.tar ]]; then
+            echo "Downloading Docker image..."
+            curl -L ${{ env.url }} -o docker_image.tar
+          else
+            echo "Using cached Docker image."
+          fi
 
       - name: Load Docker image
         run: |
