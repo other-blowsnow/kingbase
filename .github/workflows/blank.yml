@@ -1,9 +1,8 @@
 name: Publish Docker Images
 
 on:
-  push:
-    branches:
-      - main  # 或其他你希望触发发布的分支
+  release:
+    types: [published]  # 监听发布事件
 
 jobs:
   build:
@@ -22,26 +21,26 @@ jobs:
       - name: Set up version
         id: version
         run: |
-          # 根据你的需求更新版本文件
-          echo "V009R001C001B0030" >> version.txt  # 这里假设 version.txt 是你的版本文件
-          echo "::set-output name=version::$(cat version.txt)"
-
+          # 从 GitHub 事件上下文中提取版本号
+          echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION"
+          
       - name: Define Docker image URL
         id: set_url
         run: |
           ARCH=${{ matrix.arch }}
-          VERSION=${{ steps.version.outputs.version }}
+          VERSION=${{ env.VERSION }}
           
           if [ "$ARCH" == "amd" ]; then
             echo "url=https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_$VERSION.tar" >> $GITHUB_ENV
           elif [ "$ARCH" == "arm" ]; then
             echo "url=https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_aarch64_$VERSION.tar" >> $GITHUB_ENV
           fi
-      - name: Cache Docker image tar
-        uses: actions/cache@v3
-        with:
-          path: docker_image.tar
-          key: ${{ runner.os }}-docker-${{ matrix.arch }}-${{ steps.version.outputs.version }}
+      # - name: Cache Docker image tar
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: docker_image.tar
+      #     key: ${{ runner.os }}-docker-${{ matrix.arch }}-${{ steps.version.outputs.version }}
           
       - name: Download Docker image tar
         run: |
@@ -59,7 +58,7 @@ jobs:
       - name: Tag Docker image
         id: tag
         run: |
-          VERSION=${{ steps.version.outputs.version }}
+          VERSION=${{ env.VERSION }}
           IMAGE_ID=$(docker images -q | head -n 1)  # 获取最新构建的镜像 ID
           TAG_NAME="ghcr.io/other-blowsnow/kingbase:${{ matrix.arch }}_${VERSION}"
           docker tag $IMAGE_ID $TAG_NAME
