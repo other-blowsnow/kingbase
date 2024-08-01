@@ -30,7 +30,7 @@ jobs:
         run: |
           ARCH=${{ matrix.arch }}
           VERSION=${{ steps.version.outputs.version }}
-          // https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_${VERSION}.tar
+          # https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_${VERSION}.tar
           if [ "$ARCH" == "amd" ]; then
             CURL_URL="https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_${VERSION}.tar"
           elif [ "$ARCH" == "arm" ]; then
