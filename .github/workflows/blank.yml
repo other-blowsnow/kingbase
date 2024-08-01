@@ -13,7 +13,7 @@ jobs:
       matrix:
         arch:
           - amd
-          # - arm
+          - arm
 
     steps:
       - name: Checkout code
