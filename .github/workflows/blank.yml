@@ -39,7 +39,7 @@ jobs:
           DOWNLOAD_URL=$(echo "$RELEASE_BODY" | sed  -e "s/系统版本/${TEMP_ARCH}/")
           # 替换 RELEASE_BODY 里面的变量 系统版本，输出到 GITHUB_ENV  url里面
           echo "url=${DOWNLOAD_URL}" >> $GITHUB_ENV
-          
+          echo "DOWNLOAD_URL: ${DOWNLOAD_URL}"
       # - name: Cache Docker image tar
       #   uses: actions/cache@v3
       #   with:
