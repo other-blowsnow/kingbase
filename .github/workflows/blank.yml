@@ -13,7 +13,7 @@ jobs:
       matrix:
         arch:
           - amd
-          - arm
+          # - arm
 
     steps:
       - name: Checkout code
@@ -23,7 +23,7 @@ jobs:
         id: version
         run: |
           # 根据你的需求更新版本文件
-          echo "version=V009R001C001B0030" >> version.txt  # 这里假设 version.txt 是你的版本文件
+          echo "V009R001C001B0030" >> version.txt  # 这里假设 version.txt 是你的版本文件
           echo "::set-output name=version::$(cat version.txt)"
 
       - name: Download Docker tar file
