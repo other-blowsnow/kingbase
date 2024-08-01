@@ -45,7 +45,7 @@ jobs:
       - name: Download Docker image tar
         run: |
           if [[ ! -f docker_image.tar ]]; then
-            echo "Downloading Docker image..."
+            echo "Downloading Docker image: ${env.url}"
             curl -L ${{ env.url }} -o docker_image.tar
           else
             echo "Using cached Docker image."
