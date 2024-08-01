@@ -21,21 +21,25 @@ jobs:
       - name: Set up version
         id: version
         run: |
-          # 从 GitHub 事件上下文中提取版本号
-          echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-          echo "Extracted version: ${{ github.event.release.tag_name }}"
-          
-      - name: Define Docker image URL
-        id: set_url
-        run: |
+          # 从 GitHub 事件上下文中提取下载地址
+          RELEASE_BODY="${{ github.event.release.body }}"
           ARCH=${{ matrix.arch }}
-          VERSION=${{ env.VERSION }}
+          # 从 GitHub 事件上下文中提取版本号
+          VERSION=${{ github.event.release.tag_name }}  # 提取版本标签
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV  # 存入环境变量
           
           if [ "$ARCH" == "amd" ]; then
-            echo "url=https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_$VERSION.tar" >> $GITHUB_ENV
+            TEMP_ARCH = "x86_64"
           elif [ "$ARCH" == "arm" ]; then
-            echo "url=https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_aarch64_$VERSION.tar" >> $GITHUB_ENV
+            TEMP_ARCH = "x86_64"
+           else
+            echo "Unsupported architecture"
+            exit 1
           fi
+          DOWNLOAD_URL=$(echo "$RELEASE_BODY" | sed  -e "s/系统版本/${TEMP_ARCH}/")
+          # 替换 RELEASE_BODY 里面的变量 系统版本，输出到 GITHUB_ENV  url里面
+          echo "url=${DOWNLOAD_URL}" >> $GITHUB_ENV
+          
       # - name: Cache Docker image tar
       #   uses: actions/cache@v3
       #   with:
