@@ -1,0 +1,59 @@
+name: Publish Docker Images
+
+on:
+  push:
+    branches:
+      - main  # 或其他你希望触发发布的分支
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch:
+          - amd
+          - arm
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up version
+        id: version
+        run: |
+          # 根据你的需求更新版本文件
+          echo "version=V009R001C001B0030" >> version.txt  # 这里假设 version.txt 是你的版本文件
+          echo "::set-output name=version::$(cat version.txt)"
+
+      - name: Download Docker tar file
+        run: |
+          ARCH=${{ matrix.arch }}
+          VERSION=${{ steps.version.outputs.version }}
+          // https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_${VERSION}.tar
+          if [ "$ARCH" == "amd" ]; then
+            CURL_URL="https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_x86_64_${VERSION}.tar"
+          elif [ "$ARCH" == "arm" ]; then
+            CURL_URL="https://kingbase.oss-cn-beijing.aliyuncs.com/KESV8R3/05.Docker%E7%89%88%E6%9C%AC/kdb_aarch64_${VERSION}.tar"
+          fi
+          
+          curl -L $CURL_URL -o docker_image.tar
+
+      - name: Load Docker image
+        run: |
+          docker load -i docker_image.tar
+
+      - name: Tag Docker image
+        id: tag
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          IMAGE_ID=$(docker images -q | head -n 1)  # 获取最新构建的镜像 ID
+          TAG_NAME="ghcr.io/other-blowsnow/kingbase:${{ matrix.arch }}_${VERSION}"
+          docker tag $IMAGE_ID $TAG_NAME
+          echo "::set-output name=tag::$TAG_NAME"
+
+      - name: Push Docker image
+        run: |
+          TAG_NAME=${{ steps.tag.outputs.tag }}
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker push $TAG_NAME
