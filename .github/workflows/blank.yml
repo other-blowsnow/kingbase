@@ -23,7 +23,7 @@ jobs:
         run: |
           # 从 GitHub 事件上下文中提取版本号
           echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-          echo "Extracted version: $VERSION"
+          echo "Extracted version: ${{ github.event.release.tag_name }}"
           
       - name: Define Docker image URL
         id: set_url
