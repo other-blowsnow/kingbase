@@ -61,6 +61,7 @@ jobs:
           VERSION=${{ env.VERSION }}
           IMAGE_ID=$(docker images -q | head -n 1)  # 获取最新构建的镜像 ID
           TAG_NAME="ghcr.io/other-blowsnow/kingbase:${{ matrix.arch }}_${VERSION}"
+          echo "Image Tag: $TAG_NAME"
           docker tag $IMAGE_ID $TAG_NAME
           echo "::set-output name=tag::$TAG_NAME"
 
